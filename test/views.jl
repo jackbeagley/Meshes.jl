@@ -40,43 +40,20 @@
   end
 
   @testset "Data" begin
-    # dummy type implementing the Data trait
-    struct DummyData{𝒟,𝒯} <: Data
-      domain::𝒟
-      table::𝒯
+    dummydata(domain, table) = DummyData(domain, Dict(paramdim(domain) => table))
+    dummymeta(domain, table) = meshdata(domain, Dict(paramdim(domain) => table))
+
+    for dummy in [dummydata, dummymeta]
+      dom = CartesianGrid{T}(2,2)
+      dat = dummy(dom, (a=[1,2,3,4], b=[5,6,7,8]))
+      v = view(dat, 2:4)
+      @test domain(v) == view(dom, 2:4)
+      @test Tables.columntable(values(v)) == (a=[2,3,4], b=[6,7,8])
+      @test centroid(v, 1) == P2(1.5,0.5)
+      @test centroid(v, 2) == P2(0.5,1.5)
+      @test centroid(v, 3) == P2(1.5,1.5)
+      @test v[:a] == v["a"] == v.a == [2,3,4]
+      @test v[:b] == v["b"] == v.b == [6,7,8]
     end
-    Meshes.domain(data::DummyData) = data.domain
-    Meshes.values(data::DummyData) = data.table
-
-    dom = CartesianGrid{T}(2,2)
-    dat = DummyData(dom, (a=[1,2,3,4], b=[5,6,7,8]))
-
-    v = view(dat, 2:4)
-    @test domain(v) == view(dom, 2:4)
-    @test values(v) == (a=[2,3,4], b=[6,7,8])
-    @test centroid(v, 1) == P2(1.5,0.5)
-    @test centroid(v, 2) == P2(0.5,1.5)
-    @test centroid(v, 3) == P2(1.5,1.5)
-    @test v[:a] == [2,3,4]
-    @test v[:b] == [6,7,8]
-
-    v = view(dat, [:a])
-    @test domain(v) == view(dom, 1:4)
-    @test values(v) == (a=[1,2,3,4],)
-    @test centroid(v, 1) == P2(0.5,0.5)
-    @test centroid(v, 2) == P2(1.5,0.5)
-    @test centroid(v, 3) == P2(0.5,1.5)
-    @test centroid(v, 4) == P2(1.5,1.5)
-    @test v[:a] == [1,2,3,4]
-    @test_throws ErrorException v[:b]
-
-    v = view(dat, 1:3, [:a])
-    @test domain(v) == view(dom, 1:3)
-    @test values(v) == (a=[1,2,3],)
-    @test centroid(v, 1) == P2(0.5,0.5)
-    @test centroid(v, 2) == P2(1.5,0.5)
-    @test centroid(v, 3) == P2(0.5,1.5)
-    @test v[:a] == [1,2,3]
-    @test_throws ErrorException v[:b]
   end
 end

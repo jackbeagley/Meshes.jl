@@ -5,21 +5,18 @@
 """
     Domain{Dim,T}
 
-A domain is an indexable collection of geometries (i.e. mesh) or points
-where each element can be mapped to a feature vector. For example, a
-collection of polygonal areas representing the states of a country can
-be seen as a domain. In this case, the features can be the name of the
-state, the total population of the state, or any other quantity stored
-in each polygon.
+A domain is an indexable collection of geometries (e.g. mesh) or points
+For example, a collection of polygonal areas representing the states of
+a country can be seen as a domain.
 """
 abstract type Domain{Dim,T} end
 
 """
-    getindex(domain, ind)
+    element(domain, ind)
 
 Return the `ind`-th element in the `domain`.
 """
-Base.getindex(domain::Domain, ind::Int)
+element(domain::Domain, ind::Int)
 
 """
     nelements(domain)
@@ -35,6 +32,8 @@ function nelements end
 ==(d1::Domain, d2::Domain) =
   nelements(d1) == nelements(d2) &&
   all(d1[i] == d2[i] for i in 1:nelements(d1))
+
+Base.getindex(domain::Domain, ind) = element(domain, ind)
 
 Base.firstindex(domain::Domain) = 1
 
@@ -55,6 +54,14 @@ Return the number of dimensions of the space where the `domain` is embedded.
 """
 embeddim(::Type{<:Domain{Dim,T}}) where {Dim,T} = Dim
 embeddim(domain::Domain) = embeddim(typeof(domain))
+
+"""
+    paramdim(domain)
+
+Return the number of parametric dimensions of the `domain` as the number of
+parametric dimensions of its elements.
+"""
+paramdim(domain::Domain) = paramdim(first(domain))
 
 """
     coordtype(domain)
@@ -82,6 +89,13 @@ function centroid(domain::Domain)
   coords(ind) = coordinates(centroid(domain, ind))
   Point(sum(coords(ind) for ind in 1:nelm) / nelm)
 end
+
+"""
+    point ∈ domain
+
+Tells whether or not the `point` is in the `domain`.
+"""
+Base.in(p::Point, domain::Domain) = any(e -> p ∈ e, domain)
 
 # -----------
 # IO METHODS

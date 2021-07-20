@@ -15,7 +15,7 @@ end
 # DOMAIN INTERFACE
 # -----------------
 
-Base.getindex(c::Collection, ind::Int) = c.items[ind]
+element(c::Collection, ind::Int) = c.items[ind]
 
 nelements(c::Collection) = length(c.items)
 
@@ -30,7 +30,7 @@ const PointSet{Dim,T} = Collection{Dim,T,Point{Dim,T}}
 
 A set of `points` (a.k.a. point cloud) seen as a single domain.
 
-## Examples
+## Example
 
 All point sets below are the same and contain two points in R³:
 

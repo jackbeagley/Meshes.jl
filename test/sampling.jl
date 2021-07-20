@@ -1,4 +1,42 @@
+using Base: need_full_hex
 @testset "Sampling" begin
+  @testset "UniformSampling" begin
+    Random.seed!(2021)
+    d = CartesianGrid{T}(100,100)
+    s = sample(d, UniformSampling(100))
+    μ = mean(coordinates.([centroid(s, i) for i in 1:nelements(s)]))
+    @test nelements(s) == 100
+    @test isapprox(μ, T[50.,50.], atol=T(10))
+  end
+
+  @testset "WeightedSampling" begin
+    # uniform weights => uniform sampler
+    Random.seed!(2020)
+    d = CartesianGrid{T}(100,100)
+    s = sample(d, WeightedSampling(100))
+    μ = mean(coordinates.([centroid(s, i) for i in 1:nelements(s)]))
+    @test nelements(s) == 100
+    @test isapprox(μ, T[50.,50.], atol=T(10))
+  end
+
+  @testset "BallSampling" begin
+    d = CartesianGrid{T}(100,100)
+    s = sample(d, BallSampling(T(10)))
+    n = nelements(s)
+    x = coordinates(centroid(s, 1))
+    y = coordinates(centroid(s, 17))
+    @test n < 100
+    @test sqrt(sum((x - y).^2)) ≥ T(10)
+
+    d = CartesianGrid{T}(100,100)
+    s = sample(d, BallSampling(T(20)))
+    n = nelements(s)
+    x = coordinates(centroid(s, 1))
+    y = coordinates(centroid(s, 17))
+    @test n < 50
+    @test sqrt(sum((x - y).^2)) ≥ T(20)
+  end
+
   @testset "RegularSampling" begin
     b = Box(P2(0, 0), P2(2, 2))
     ps = sample(b, RegularSampling(3))
@@ -57,41 +95,34 @@
     end
   end
 
-  @testset "UniformSampling" begin
-    Random.seed!(2021)
-    d = CartesianGrid{T}(100,100)
-    s = sample(d, UniformSampling(100))
-    μ = mean(coordinates.([centroid(s, i) for i in 1:nelements(s)]))
-    @test nelements(s) == 100
-    @test isapprox(μ, T[50.,50.], atol=T(10))
+  @testset "HomogeneousSampling" begin
+    t = Triangle(P2(0,0), P2(1,0), P2(0,1))
+    ps = sample(t, HomogeneousSampling(100))
+    @test first(ps) isa P2
+    @test all(∈(t), ps)
+
+    q = Quadrangle(P2(0,0), P2(1,0), P2(1,1), P2(0,1))
+    ps = sample(q, HomogeneousSampling(100))
+    @test first(ps) isa P2
+    @test all(∈(q), ps)
+
+    points = P2[(0,0), (1,0), (0,1), (1,1), (0.25,0.5), (0.75,0.5)]
+    connec = connect.([(3,1,5),(4,6,2),(1,2,6,5),(5,6,4,3)])
+    mesh = SimpleMesh(points, connec)
+    ps = sample(mesh, HomogeneousSampling(400))
+    @test first(ps) isa P2
+    @test all(∈(mesh), ps)
   end
 
-  @testset "WeightedSampling" begin
-    # uniform weights => uniform sampler
-    Random.seed!(2020)
-    d = CartesianGrid{T}(100,100)
-    s = sample(d, WeightedSampling(100))
-    μ = mean(coordinates.([centroid(s, i) for i in 1:nelements(s)]))
-    @test nelements(s) == 100
-    @test isapprox(μ, T[50.,50.], atol=T(10))
-  end
-
-  @testset "BallSampling" begin
-    d = CartesianGrid{T}(100,100)
-    s = sample(d, BallSampling(T(10)))
-    n = nelements(s)
-    x = coordinates(centroid(s, 1))
-    y = coordinates(centroid(s, 17))
-    @test n < 100
-    @test sqrt(sum((x - y).^2)) ≥ T(10)
-
-    d = CartesianGrid{T}(100,100)
-    s = sample(d, BallSampling(T(20)))
-    n = nelements(s)
-    x = coordinates(centroid(s, 1))
-    y = coordinates(centroid(s, 17))
-    @test n < 50
-    @test sqrt(sum((x - y).^2)) ≥ T(20)
+  @testset "MinDistanceSampling" begin
+    points = P2[(0,0), (1,0), (0,1), (1,1), (0.25,0.5), (0.75,0.5)]
+    connec = connect.([(3,1,5),(4,6,2),(1,2,6,5),(5,6,4,3)])
+    mesh = SimpleMesh(points, connec)
+    ps = sample(mesh, MinDistanceSampling(0.2))
+    n = length(ps)
+    @test first(ps) isa P2
+    @test all(∈(mesh), ps)
+    @test all(norm(ps[i] - ps[j]) ≥ 0.2 for i in 1:n for j in i+1:n)
   end
 
   @testset "Utilities" begin

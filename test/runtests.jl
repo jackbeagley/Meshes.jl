@@ -48,27 +48,37 @@ function readpoly(T, fname)
   end
 end
 
+include("dummy.jl")
+
 # list of tests
 testfiles = [
   "points.jl",
   "angles.jl",
   "polytopes.jl",
   "primitives.jl",
+  "multi.jl",
   "collections.jl",
-  "distances.jl",
   "connectivities.jl",
-  "topostructures.jl",
+  "topologies.jl",
+  "toporelations.jl",
   "mesh.jl",
+  "meshdata.jl",
   "traits.jl",
-  "views.jl",
   "paths.jl",
+  "distances.jl",
   "neighborhoods.jl",
   "neighborsearch.jl",
+  "supportfun.jl",
+  "laplacian.jl",
+  "views.jl",
   "viewing.jl",
   "sampling.jl",
   "partitioning.jl",
+  "intersections.jl",
   "discretization.jl",
   "simplification.jl",
+  "refinement.jl",
+  "smoothing.jl",
   "boundingboxes.jl"
 ]
 

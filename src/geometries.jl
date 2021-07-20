@@ -68,6 +68,21 @@ Tells whether or not the point `p` is in the geometry `g`.
 """
 Base.in(p::Point, g::Geometry)
 
+"""
+    isconvex(geometry)
+
+Tells whether or not the `geometry` is convex.
+"""
+isconvex(g::Geometry) = isconvex(typeof(g))
+
+"""
+    issimplex(geometry)
+
+Tells whether or not the `geometry` is simplex.
+"""
+issimplex(::Type{<:Geometry}) = false
+issimplex(g::Geometry) = issimplex(typeof(g))
+
 # ----------------
 # IMPLEMENTATIONS
 # ----------------
@@ -105,13 +120,29 @@ Base.iterate(multi::Multi, state=1) =
 
 paramdim(multi::Multi) = maximum(paramdim, multi.items)
 
+==(multi₁::Multi, multi₂::Multi) =
+  length(multi₁) == length(multi₂) &&
+  all(g -> g[1] == g[2], zip(multi₁, multi₂))
+
 function centroid(multi::Multi)
   cs = coordinates.(centroid.(multi.items))
   Point(sum(cs) / length(cs))
 end
 
+measure(multi::Multi) = sum(measure, multi.items)
+
+area(multi::Multi{Dim,T,<:Polygon}) where{Dim,T} = measure(multi)
+
+chains(multi::Multi{Dim,T,<:Polygon}) where {Dim,T} =
+  [chain for geom in multi for chain in chains(geom)]
+
 function Base.show(io::IO, multi::Multi{Dim,T}) where {Dim,T}
   n = length(multi.items)
   G = eltype(multi.items)
   print(io, "$n Multi-$(nameof(G)){$Dim,$T}")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", multi::Multi)
+  println(io, multi)
+  print(io, io_lines(multi, "  "))
 end

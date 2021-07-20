@@ -11,25 +11,21 @@ The algorithm is described in the first chapter of Devadoss & Rourke 2011,
 and is based on a theorem derived in 1899 by the German mathematician Max Dehn.
 See https://en.wikipedia.org/wiki/Two_ears_theorem.
 
-Because the algorithm relies on recursion, it is only appropriate for small
-polygonal areas. Currently, the implementation does not support holes.
+Because the algorithm relies on recursion, it is mostly appropriate for polygons
+with small number of vertices. Currently, the implementation does not support holes.
 
 ## References
 
 * Devadoss, S & Rourke, J. 2011. [Discrete and computational geometry]
   (https://press.princeton.edu/books/hardcover/9780691145532/discrete-and-computational-geometry)
 """
-struct Dehn1899 end
+struct Dehn1899 <: DiscretizationMethod end
 
-function discretize(polyarea::PolyArea, ::Dehn1899)
-  # build bridges in case the polygonal area has
-  # holes, i.e. reduce to a single outer boundary
-  𝒫 = polyarea |> unique |> bridge
-
+function discretize(𝒫::Chain, ::Dehn1899)
   # points on resulting mesh
   points = collect(vertices(𝒫))
 
-  # Devadoss-Rourke recursion
+  # Dehn's recursion
   connec = dehn1899(points, 1:length(points))
 
   SimpleMesh(points, connec)
@@ -40,15 +36,8 @@ function dehn1899(v::AbstractVector{Point{Dim,T}}, inds) where {Dim,T}
   n = length(I)
 
   if n > 3 # split chain
-    # find lowest vertex
-    i  = 1
-    yᵢ = last(coordinates(v[I[1]]))
-    for j in 2:n
-      yⱼ = last(coordinates(v[I[j]]))
-      if yⱼ < yᵢ
-        i, yᵢ = j, yⱼ
-      end
-    end
+    # find lowerleft vertex
+    i = first(sortperm(coordinates.(v[I])))
 
     # left/right chains
     linds = i-1:i+1
@@ -57,7 +46,7 @@ function dehn1899(v::AbstractVector{Point{Dim,T}}, inds) where {Dim,T}
     # check if candidate diagonal is valid
     Δ = Triangle(v[I[linds]])
     intriangle = findall(j -> v[I[j]] ∈ Δ, rinds[2:end-1])
-    isdiag = signarea(Δ) > zero(T) && isempty(intriangle)
+    isdiag = signarea(Δ) > atol(T)^2 && isempty(intriangle)
 
     # adjust diagonal if necessary
     if !isdiag

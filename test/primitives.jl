@@ -2,25 +2,18 @@
   @testset "Lines" begin
     l = Line(P2(0,0), P2(1,1))
     @test paramdim(l) == 1
+    @test isconvex(l)
+
+    l = Line(P2(0,0), P2(1,1))
     @test (l(0), l(1)) == (P2(0,0), P2(1,1))
-
-    l1 = Line(P2(0,0), P2(1,0))
-    l2 = Line(P2(-1,-1), P2(-1,1))
-    @test l1 ∩ l2 == l2 ∩ l1 == P2(-1,0)
-
-    l1 = Line(P2(0,0), P2(1,0))
-    l2 = Line(P2(0,1), P2(1,1))
-    @test l1 ∩ l2 === l2 ∩ l1 === nothing
-
-    l1 = Line(P2(0,0), P2(1,0))
-    l2 = Line(P2(1,0), P2(2,0))
-    @test l1 == l2
-    @test l1 ∩ l2 == l2 ∩ l1 == l1
   end
 
   @testset "Rays" begin
     r = Ray(P2(0,0), V2(1,1))
     @test paramdim(r) == 1
+    @test isconvex(r)
+
+    r = Ray(P2(0,0), V2(1,1))
     @test r(T(0.)) == P2(0,0)
     @test r(T(1.)) == P2(1,1)
     @test r(T(Inf)) == P2(Inf,Inf)
@@ -32,6 +25,7 @@
     @test p(T(1.0), T(0.0)) == P3(1, 0, 0)
     @test paramdim(p) == 2
     @test embeddim(p) == 3
+    @test isconvex(p)
   end
 
   @testset "Bezier curves" begin
@@ -63,6 +57,9 @@
     @test minimum(b) == P2(0,0)
     @test maximum(b) == P2(1,1)
     @test extrema(b) == (P2(0,0), P2(1,1))
+    @test isconvex(b)
+
+    b = Box(P2(0,0), P2(1,1))
     @test measure(b) == T(1)
     @test P2(1,1) ∈ b
 
@@ -71,20 +68,11 @@
     @test Meshes.center(b) == P2(1.5,1.5)
     @test diagonal(b) == √T(2)
 
-    # intersection of boxes
-    b1 = Box(P2(0,0), P2(1,1))
-    b2 = Box(P2(0.5,0.5), P2(2,2))
-    b3 = Box(P2(2,2), P2(3,3))
-    b4 = Box(P2(1,1), P2(2,2))
-    b5 = Box(P2(1.0,0.5), P2(2,2))
-    @test intersecttype(b1, b2) isa OverlappingBoxes
-    @test b1 ∩ b2 == Box(P2(0.5,0.5), P2(1,1))
-    @test intersecttype(b1, b3) isa NonIntersectingBoxes
-    @test b1 ∩ b3 === nothing
-    @test intersecttype(b1, b4) isa CornerTouchingBoxes
-    @test b1 ∩ b4 == P2(1,1)
-    @test intersecttype(b1, b5) isa FaceTouchingBoxes
-    @test b1 ∩ b5 == Box(P2(1.0,0.5), P2(1,1))
+    b = Box(P2(1,2), P2(3,4))
+    @test vertices(b) == P2[(1,2),(3,2),(3,4),(1,4)]
+
+    b = Box(P3(1,2,3), P3(4,5,6))
+    @test vertices(b) == P3[(1,2,3),(4,2,3),(4,5,3),(1,5,3),(1,2,6),(4,2,6),(4,5,6),(1,5,6)]
 
     # subsetting with boxes
     b1 = Box(P2(0,0), P2(0.5,0.5))
@@ -104,6 +92,7 @@
     @test coordtype(b) == T
     @test Meshes.center(b) == P3(1,2,3)
     @test radius(b) == T(5)
+    @test isconvex(b)
 
     b = Ball(P2(0,0), T(2))
     @test measure(b) ≈ π*(2^2)
@@ -132,6 +121,7 @@
     @test coordtype(s) == T
     @test Meshes.center(s) == P3(0, 0, 0)
     @test radius(s) == T(1)
+    @test !isconvex(s)
 
     s = Sphere(P2(0,0), T(2))
     @test measure(s) ≈ 2π*2
@@ -171,6 +161,7 @@
     @test coordtype(c) == T
     @test radius(c) == T(5)
     @test height(c) ≈ √27
+    @test isconvex(c)
 
     @test measure(c) ≈ π*5.0^2*√27
   end

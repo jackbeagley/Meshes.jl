@@ -1,8 +1,8 @@
-# Workaround for GR warnings
-ENV["GKSwstype"] = "100"
-
 using Documenter, Meshes
 using DocumenterTools: Themes
+
+# Workaround for GR warnings
+ENV["GKSwstype"] = "100"
 
 istravis = "TRAVIS" ∈ keys(ENV)
 
@@ -42,15 +42,21 @@ makedocs(
         "geometries/polytopes.md"
       ],
       "Meshes" => "meshes.md",
+      "Mesh data" => "meshdata.md",
       "Neighborhoods" => "neighborhoods.md",
       "Algorithms" => [
         "algorithms/sampling.md",
         "algorithms/partitioning.md",
         "algorithms/discretization.md",
-        "algorithms/boundbox.md",
+        "algorithms/refinement.md",
+        "algorithms/smoothing.md",
+        "algorithms/simplification.md",
+        "algorithms/boundingbox.md",
         "algorithms/intersection.md",
         "algorithms/neighborsearch.md"
-      ]
+      ],
+      "Visualization" => "visualization.md",
+      "Traits" => "traits.md"
   ],
     "Contributing" => [
       "contributing/guidelines.md",

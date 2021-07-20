@@ -130,7 +130,6 @@
     ])
     @test vertices(mesh) == points
     @test collect(faces(mesh, 2)) == triangles
-    @test collect(faces(mesh)) == triangles
     @test collect(elements(mesh)) == triangles
     @test nelements(mesh) == 4
     for i in 1:length(triangles)
@@ -140,13 +139,13 @@
 
     points = P2[(0,0), (1,0), (0,1), (1,1), (0.25,0.5), (0.75,0.5)]
     Δs = connect.([(3,1,5),(4,6,2)], Triangle)
-    □s = connect.([(1,2,5,6),(5,6,3,4)], Quadrangle)
+    □s = connect.([(1,2,6,5),(5,6,4,3)], Quadrangle)
     mesh = SimpleMesh(points, [Δs; □s])
     elms = [
       Triangle(P2[(0.0,1.0), (0.0,0.0), (0.25,0.5)]),
       Triangle(P2[(1.0,1.0), (0.75,0.5), (1.0,0.0)]),
-      Quadrangle(P2[(0.0,0.0), (1.0,0.0), (0.25,0.5), (0.75,0.5)]),
-      Quadrangle(P2[(0.25,0.5), (0.75,0.5), (0.0,1.0), (1.0,1.0)])
+      Quadrangle(P2[(0.0,0.0), (1.0,0.0), (0.75,0.5), (0.25,0.5)]),
+      Quadrangle(P2[(0.25,0.5), (0.75,0.5), (1.0,1.0), (0.0,1.0)])
     ]
     @test collect(elements(mesh)) == elms
     @test nelements(mesh) == 4
@@ -172,13 +171,20 @@
     @test centroid(mesh, 3) == centroid(Triangle(P2[(1,1), (0,1), (0.5,0.5)]))
     @test centroid(mesh, 4) == centroid(Triangle(P2[(0,1), (0,0), (0.5,0.5)]))
 
+    # merge operation
+    mesh₁ = SimpleMesh(P2[(0,0), (1,0), (0,1)], connect.([(1,2,3)]))
+    mesh₂ = SimpleMesh(P2[(1,0), (1,1), (0,1)], connect.([(1,2,3)]))
+    mesh  = merge(mesh₁, mesh₂)
+    @test vertices(mesh) == [vertices(mesh₁); vertices(mesh₂)]
+    @test collect(elements(topology(mesh))) == connect.([(1,2,3),(4,5,6)])
+
     points = P2[(0,0), (1,0), (0,1), (1,1), (0.5,0.5)]
     connec = connect.([(1,2,5),(2,4,5),(4,3,5),(3,1,5)], Triangle)
     mesh = SimpleMesh(points, connec)
     if T == Float32
-      @test sprint(show, MIME"text/plain"(), mesh) == "4 SimpleMesh{2,Float32}\n  5 vertices\n    └─Point(0.0f0, 0.0f0)\n    └─Point(1.0f0, 0.0f0)\n    └─Point(0.0f0, 1.0f0)\n    └─Point(1.0f0, 1.0f0)\n    └─Point(0.5f0, 0.5f0)\n  4 faces\n    └─Triangle(1, 2, 5)\n    └─Triangle(2, 4, 5)\n    └─Triangle(4, 3, 5)\n    └─Triangle(3, 1, 5)"
+      @test sprint(show, MIME"text/plain"(), mesh) == "4 SimpleMesh{2,Float32}\n  5 vertices\n    └─Point(0.0f0, 0.0f0)\n    └─Point(1.0f0, 0.0f0)\n    └─Point(0.0f0, 1.0f0)\n    └─Point(1.0f0, 1.0f0)\n    └─Point(0.5f0, 0.5f0)\n  4 elements\n    └─Triangle(1, 2, 5)\n    └─Triangle(2, 4, 5)\n    └─Triangle(4, 3, 5)\n    └─Triangle(3, 1, 5)"
     elseif T == Float64
-      @test sprint(show, MIME"text/plain"(), mesh) == "4 SimpleMesh{2,Float64}\n  5 vertices\n    └─Point(0.0, 0.0)\n    └─Point(1.0, 0.0)\n    └─Point(0.0, 1.0)\n    └─Point(1.0, 1.0)\n    └─Point(0.5, 0.5)\n  4 faces\n    └─Triangle(1, 2, 5)\n    └─Triangle(2, 4, 5)\n    └─Triangle(4, 3, 5)\n    └─Triangle(3, 1, 5)"
+      @test sprint(show, MIME"text/plain"(), mesh) == "4 SimpleMesh{2,Float64}\n  5 vertices\n    └─Point(0.0, 0.0)\n    └─Point(1.0, 0.0)\n    └─Point(0.0, 1.0)\n    └─Point(1.0, 1.0)\n    └─Point(0.5, 0.5)\n  4 elements\n    └─Triangle(1, 2, 5)\n    └─Triangle(2, 4, 5)\n    └─Triangle(4, 3, 5)\n    └─Triangle(3, 1, 5)"
     end
   end
 end

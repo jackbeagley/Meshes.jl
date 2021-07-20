@@ -31,11 +31,7 @@ end
 
 FIST() = FIST(true)
 
-function discretize(polyarea::PolyArea, method::FIST)
-  # build bridges in case the polygonal area has
-  # holes, i.e. reduce to a single outer boundary
-  𝒫 = polyarea |> unique |> bridge
-
+function discretize(𝒫::Chain, method::FIST)
   # points of resulting mesh
   points = vertices(𝒫)
 
@@ -144,7 +140,7 @@ function isearccw(𝒫::Chain{Dim,T}, i) where {Dim,T}
   for j in 1:nvertices(𝒫)
     sⱼ = Segment(v[j], v[j+1])
     I = intersecttype(sᵢ, sⱼ)
-    if !(I isa CornerTouchingSegments || I isa NonIntersectingSegments)
+    if !(I isa CornerTouchingSegments || I isa NoIntersection)
       intersects = true
       break
     end

@@ -15,10 +15,32 @@ end
 # specialize Polytope outer constructor to use standard vector
 Chain(vertices::Vararg{<:Point}) = Chain(collect(vertices))
 
-Chain(vertices::CircularVector) =
-  Chain([collect(vertices); vertices[begin]])
+Chain(vertices::CircularVector) = Chain([collect(vertices); first(vertices)])
 
-nvertices(c::Chain) = length(c.vertices) - isclosed(c)
+"""
+    npoints(chain)
+
+Return the total number of points used to represent the
+chain, no matter if it is closed or open.
+
+See also [`nvertices`](@ref).
+
+### Notes
+
+This function is provided for IO purposes. Most algorithms
+should be written in terms of `nvertices` and `vertices`
+as they are consistent with each other.
+"""
+npoints(c::Chain) = length(c.vertices)
+
+"""
+    nvertices(chain)
+
+Return the number of vertices of the `chain`. In the case
+that the chain is closed, the number of vertices is one
+less the total number of points used to represent the chain.
+"""
+nvertices(c::Chain) = npoints(c) - isclosed(c)
 
 """
     vertices(chain)
@@ -42,9 +64,9 @@ end
 Return the segments linking consecutive points of the `chain`.
 """
 function segments(c::Chain)
-  vs = c.vertices
-  n = length(vs)
-  (Segment(view(vs, [i,i+1])) for i in 1:n-1)
+  v = c.vertices
+  n = length(v)
+  (Segment(view(v, [i,i+1])) for i in 1:n-1)
 end
 
 """
@@ -65,12 +87,11 @@ A chain is simple when all its segments only
 intersect at end points.
 """
 function issimple(c::Chain)
-  vs = c.vertices
   ss = collect(segments(c))
   for i in 1:length(ss)
     for j in i+1:length(ss)
       I = intersecttype(ss[i], ss[j])
-      if !(I isa CornerTouchingSegments || I isa NonIntersectingSegments)
+      if !(I isa CornerTouchingSegments || I isa NoIntersection)
         return false
       end
     end
@@ -264,18 +285,13 @@ end
 
 Base.view(c::Chain, inds) = Chain(view(vertices(c), inds))
 
-function Base.show(io::IO, c::Chain)
-  N = length(c.vertices)
-  print(io, "$N-chain")
+function Base.show(io::IO, c::Chain{Dim,T}) where {Dim,T}
+  N = npoints(c)
+  print(io, "$N-Chain{$Dim,$T}")
 end
 
 function Base.show(io::IO, ::MIME"text/plain", c::Chain{Dim,T}) where {Dim,T}
   v = c.vertices
-  N = length(v)
-  I, J = N > 10 ? (5, N-4) : (N, N+1)
-  lines = [["  └─$(v[i])" for i in 1:I]
-           (N > 10 ? ["  ⋮"] : [])
-           ["  └─$(v[i])" for i in J:N]]
-  println(io, "$N-chain{$Dim,$T}")
-  print(io, join(lines, "\n"))
+  println(io, c)
+  print(io, io_lines(v, "  "))
 end

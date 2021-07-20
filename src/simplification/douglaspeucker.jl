@@ -5,8 +5,8 @@
 """
     DouglasPeucker(ϵ)
 
-The Douglas-Peucker algorithm for simplifying polygonal chains given
-a deviation tolerance `ϵ`.
+The Douglas-Peucker algorithm for simplifying polygonal chains or
+polygonal areas given a deviation tolerance `ϵ`.
 
 ## References
 
@@ -16,15 +16,6 @@ a deviation tolerance `ϵ`.
 """
 struct DouglasPeucker{T} <: SimplificationMethod
   ϵ::T
-end
-
-function simplify(multi::Multi, method::DouglasPeucker)
-  Multi([simplify(geom, method) for geom in multi])
-end
-
-function simplify(polyarea::PolyArea, method::DouglasPeucker)
-  c = [simplify(chain, method) for chain in chains(polyarea)]
-  PolyArea(c[1], c[2:end])
 end
 
 function simplify(chain::Chain, method::DouglasPeucker)

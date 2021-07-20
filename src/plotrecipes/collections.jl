@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------
 
 @recipe function f(pset::PointSet{Dim,T}) where {Dim,T}
-  pts = [pset[i] for i in 1:nelements(pset)]
+  coords = Tuple.(coordinates.(pset))
 
   seriestype --> :scatter
   seriescolor --> :black
@@ -11,27 +11,27 @@
 
   if Dim == 1
     @series begin
-      first.(coordinates.(pts)), fill(0, nelements(pset))
+      first.(coords), fill(0, length(coords))
     end
   else
     aspect_ratio --> :equal
     @series begin
-      @. Tuple(coordinates(pts))
+      coords
     end
   end
 end
 
 @recipe function f(pset::PointSet{Dim,T}, data::AbstractVector) where {Dim,T}
-  pts = [pset[i] for i in 1:nelements(pset)]
+  coords = Tuple.(coordinates.(pset))
 
   seriestype --> :scatter
 
   if Dim == 1
-    first.(coordinates.(pts)), data
+    first.(coords), data
   else
     aspect_ratio --> :equal
     marker_z --> data
     colorbar --> true
-    @. Tuple(coordinates(pts))
+    coords
   end
 end

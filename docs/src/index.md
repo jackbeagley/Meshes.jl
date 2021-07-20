@@ -50,8 +50,8 @@ available functionality, please consult the [Reference guide](points.md) and the
 the package.
 
 ```@example overview
-using Meshes
-using Plots
+using Meshes, MeshViz
+import CairoMakie
 ```
 
 ### Points and vectors
@@ -126,13 +126,13 @@ extrema(b)
 ```
 
 ```@example overview
-center(s), radius(s)
+centroid(s), radius(s)
 ```
 
 As well as their measure (e.g. area, volume) and other geometric properties:
 
 ```@example overview
-measure(b) == 1
+measure(b)
 ```
 
 We can sample random points on primitives using different methods:
@@ -151,11 +151,11 @@ collect(vs)
 
 Polytopes are geometries with "flat" sides. They generalize polygons and polyhedra.
 Most commonly used polytopes are already defined in the project, including
-[`Triangle`](@ref), [`Pyramid`](@ref), [`Quadrangle`](@ref), [`Segment`](@ref),
-[`Tetrahedron`](@ref), and [`Hexahedron`](@ref).
+[`Segment`](@ref), [`Ngon`](@ref) (e.g. Triangle, Quadrangle), [`Tetrahedron`](@ref),
+[`Pyramid`](@ref) and [`Hexahedron`](@ref).
 
 ```@example overview
-t = Triangle((0,0), (1,0), (0,1))
+t = Triangle((0.0, 0.0), (1.0, 0.0), (0.0, 1.0))
 ```
 
 Some of these geometries have additional functionality like the measure (or area):
@@ -286,8 +286,64 @@ like with the Cartesian grid:
 collect(elements(mesh))
 ```
 
-and many geometries and meshes can be directly plotted with Plots.jl:
+and all geometries and meshes can be visualized with
+[MeshViz.jl](https://github.com/JuliaGeometry/MeshViz.jl):
 
 ```@example overview
-plot(mesh)
+viz(mesh, showfacets = true)
+```
+
+### Mesh data
+
+To attach data to the geometries of a mesh, we can use the
+[`meshdata`](@ref) function, which combines a mesh object
+with a collection of Tables.jl tables. For example, it is
+common to attach a table `vtable` to the vertices and a
+table `etable` to the elements of the mesh:
+
+```@example overview
+d = meshdata(mesh,
+  vtable = (temperature=rand(6), pressure=rand(6)),
+  etable = (quality=["A","B"], state=[true,false])
+)
+```
+
+More generally, we can attach a table to any rank:
+
+- 0 (vertices)
+- 1 (segments)
+- 2 (triangles, quadrangles, ...)
+- 3 (tetrahedrons, hexahedrons, ...)
+
+To retrieve the data table for a given rank we use
+the `values` function:
+
+```@example overview
+values(d, 0)
+```
+
+```@example overview
+values(d, 2)
+```
+
+If we ommit the rank, the function will return the `etable`
+of the mesh:
+
+```@example overview
+values(d)
+```
+
+When a table is not available for a given rank, the value
+`nothing` is returned instead:
+
+```@example overview
+values(d, 1) === nothing
+```
+
+Finally, we can use the `domain` function to retrieve the
+underlying domain of the data, which in this case is a
+`SimpleMesh`:
+
+```@example overview
+domain(d)
 ```

@@ -1,97 +1,7 @@
 @testset "Polytopes" begin
   @testset "Segment" begin
     @test paramdim(Segment) == 1
-
-    s1 = Segment(P2(0,0), P2(1,0))
-    s2 = Segment(P2(0.5,0.0), P2(2,0))
-    @test s1 ∩ s2 == Segment(P2(0.5,0.0), P2(1,0))
-    @test s2 ∩ s1 == Segment(P2(0.5,0.0), P2(1,0))
-
-    s1 = Segment(P2(0,0), P2(1,0))
-    s2 = Segment(P2(0,0), P2(0,1))
-    @test s1 ∩ s2 == P2(0,0)
-    @test s2 ∩ s1 == P2(0,0)
-
-    s1 = Segment(P2(0,0), P2(1,0))
-    s2 = Segment(P2(0,0), P2(-1,0))
-    @test s1 ∩ s2 == P2(0,0)
-    @test s2 ∩ s1 == P2(0,0)
-
-    s1 = Segment(P2(0,0), P2(0,1))
-    s2 = Segment(P2(0,0), P2(0,-1))
-    @test s1 ∩ s2 == P2(0,0)
-    @test s2 ∩ s1 == P2(0,0)
-
-    s1 = Segment(P2(1,1), P2(1,2))
-    s2 = Segment(P2(1,1), P2(1,0))
-    @test s1 ∩ s2 == P2(1,1)
-    @test s2 ∩ s1 == P2(1,1)
-
-    s1 = Segment(P2(1,1), P2(2,1))
-    s2 = Segment(P2(1,0), P2(3,0))
-    @test s1 ∩ s2 === nothing
-    @test s2 ∩ s1 === nothing
-
-    s1 = Segment(P2(0.181429364026879, 0.546811355144474),
-                 P2(0.38282226144778, 0.107781953228536))
-    s2 = Segment(P2(0.412498700935005, 0.212081819871479),
-                 P2(0.395936725690311, 0.252041094122474))
-    @test s1 ∩ s2 === nothing
-    @test s2 ∩ s1 === nothing
-
-    s1 = Segment(P2(1,2), P2(1,0))
-    s2 = Segment(P2(1,0), P2(1,1))
-    @test s1 ∩ s2 == Segment(P2(1,0), P2(1,1))
-
-    s1 = Segment(P2(0,0), P2(2,0))
-    s2 = Segment(P2(-2,0), P2(-1,0))
-    s3 = Segment(P2(-1,0), P2(-2,0))
-    @test s1 ∩ s2 === s2 ∩ s1 === nothing
-    @test s1 ∩ s3 === s3 ∩ s1 === nothing
-
-    s1 = Segment(P2(-1,0), P2(0,0))
-    s2 = Segment(P2(0,0), P2(2,0))
-    @test s1 ∩ s2 == s2 ∩ s1 == P2(0,0)
-
-    s1 = Segment(P2(-1,0), P2(1,0))
-    s2 = Segment(P2(0,0), P2(3,0))
-    @test s1 ∩ s2 == s2 ∩ s1 == Segment(P2(0,0), P2(1,0))
-
-    s1 = Segment(P2(0,0), P2(1,0))
-    s2 = Segment(P2(0,0), P2(2,0))
-    @test s1 ∩ s2 == s2 ∩ s1 == Segment(P2(0,0), P2(1,0))
-
-    s1 = Segment(P2(0,0), P2(3,0))
-    s2 = Segment(P2(1,0), P2(2,0))
-    @test s1 ∩ s2 == s2 ∩ s1 == s2
-
-    s1 = Segment(P2(0,0), P2(2,0))
-    s2 = Segment(P2(1,0), P2(2,0))
-    @test s1 ∩ s2 == s2 ∩ s1 == s2
-
-    s1 = Segment(P2(0,0), P2(2,0))
-    s2 = Segment(P2(1,0), P2(3,0))
-    @test s1 ∩ s2 == s2 ∩ s1 == Segment(P2(1,0), P2(2,0))
-
-    s1 = Segment(P2(0,0), P2(2,0))
-    s2 = Segment(P2(2,0), P2(3,0))
-    @test s1 ∩ s2 == s2 ∩ s1 == P2(2,0)
-
-    s1 = Segment(P2(0,0), P2(2,0))
-    s2 = Segment(P2(3,0), P2(4,0))
-    @test s1 ∩ s2 === s2 ∩ s1 === nothing
-
-    s1 = Segment(P2(2,1), P2(1,2))
-    s2 = Segment(P2(1,0), P2(1,1))
-    @test s1 ∩ s2 === s2 ∩ s1 === nothing
-    
-    s1 = Segment(P2(1.5,1.5), P2(3.0,1.5))
-    s2 = Segment(P2(3.0,1.0), P2(2.0,2.0))
-    @test s1 ∩ s2 == s2 ∩ s1 == P2(2.5,1.5)
-
-    s1 = Segment(P2(0.94495744, 0.53224397), P2(0.94798386, 0.5344541))
-    s2 = Segment(P2(0.94798386, 0.5344541), P2(0.9472896, 0.5340202))
-    @test s1 ∩ s2 == s2 ∩ s1 == P2(0.94798386, 0.5344541) 
+    @test nvertices(Segment) == 2
 
     s1 = Segment(P2(0.,0.), P2(1., 1.))
     @test s1(T(0.)) == P2(0., 0.)
@@ -100,17 +10,23 @@
     @test_throws DomainError(T(-0.5), "s(t) is not defined for t outside [0, 1].") s1(T(-0.5))
   end
 
-  @testset "Triangles" begin
-    @test paramdim(Triangle) == 2
+  @testset "N-gons" begin
+    @test paramdim(Ngon) == 2
+    NGONS = [Triangle, Quadrangle, Pentagon, Hexagon,
+             Heptagon, Octagon, Nonagon, Decagon]
+    NVERT = 3:10
+    for i in 1:length(NGONS)
+      @test paramdim(NGONS[i]) == 2
+      @test nvertices(NGONS[i]) == NVERT[i]
+    end
 
+    # Triangle in 2D space
     t = Triangle(P2(0,0), P2(1,0), P2(0,1))
     @test signarea(t) == T(0.5)
     @test area(t) == T(0.5)
-
     t = Triangle(P2(0,0), P2(0,1), P2(1,0))
     @test signarea(t) == T(-0.5)
     @test area(t) == T(0.5)
-
     t = Triangle(P2(0,0), P2(1,0), P2(1,1))
     for p in P2[(0,0),(1,0),(1,1),(0.5,0.),(1.,0.5),(0.5,0.5)]
       @test p ∈ t
@@ -118,31 +34,26 @@
     for p in P2[(-1,0),(0,-1),(0.5,1.)]
       @test p ∉ t
     end
+    t = Triangle(P2(0.4,0.4), P2(0.6,0.4), P2(0.8,0.4))
+    @test P2(0.2,0.4) ∉ t
+    t = Triangle(P2(0,0), P2(1,0), P2(0,1))
+    @test !hasholes(t)
+    @test unique(t) == t
+    @test boundary(t) == first(chains(t))
+    @test chains(t) == [Chain(P2(0,0), P2(1,0), P2(0,1), P2(0,0))]
+    @test bridge(t) == (first(chains(t)), [])
 
+    # Triangle in 3D space
     t = Triangle(P3(0,0,0), P3(1,0,0), P3(0,1,0))
     @test area(t) == T(0.5)
+    t = Triangle(P3(0,0,0), P3(1,0,0), P3(0,1,1))
+    @test area(t) > T(0.7)
 
-    t = Triangle(P3(0,0,1), P3(0,1,1), P3(1,0,1))
-    @test area(t) == T(0.5)
-
-    t = Triangle(P3(0,0,0), P3(1,0,0), P3(1,0,1))
-    for p in P3[(0,0,0),(1,0,0),(1,0,1),(0.5,0,0.),(1.,0,0.5),(0.5,0,0.5)]
-     @test p ∈ t
-    end
-    for p in P3[(-1,0,0),(0,0,-1),(0.5,0,1.)]
-     @test p ∉ t
-    end
-  end
-
-  @testset "Quadrangles" begin
-    @test paramdim(Quadrangle) == 2
-
+    # Quadrangle in 2D space
     q = Quadrangle(P2(0,0), P2(1,0), P2(1,1), P2(0,1))
     @test area(q) == T(1)
-
     q = Quadrangle(P2(0,0), P2(1,0), P2(1.5,1.0), P2(0.5,1.0))
     @test area(q) == T(1)
-
     q = Quadrangle(P2(0,0), P2(1,0), P2(1.5,1.0), P2(0.5,1.0))
     for p in P2[(0,0),(1,0),(1.5,1.0),(0.5,1.0),(0.5,0.5)]
       @test p ∈ q
@@ -150,6 +61,30 @@
     for p in P2[(0,1),(1.5,0.0)]
       @test p ∉ q
     end
+    q = Quadrangle(P2(0,0), P2(1,0), P2(1,1), P2(0,1))
+    @test !hasholes(q)
+    @test unique(q) == q
+    @test boundary(q) == first(chains(q))
+    @test chains(q) == [Chain(P2(0,0), P2(1,0), P2(1,1), P2(0,1), P2(0,0))]
+    @test bridge(q) == (first(chains(q)), [])
+
+    # Quadrangle in 3D space
+    q = Quadrangle(P3(0,0,0), P3(1,0,0), P3(1,1,0), P3(0,1,0))
+    @test area(q) == T(1)
+    q = Quadrangle(P3(0,0,0), P3(1,0,0), P3(1,1,0), P3(0,1,1))
+    @test area(q) > T(1)
+  end
+
+  @testset "N-hedrons" begin
+    @test paramdim(Tetrahedron) == 3
+    @test nvertices(Tetrahedron) == 4
+    @test paramdim(Pyramid) == 3
+    @test nvertices(Pyramid) == 5
+    @test paramdim(Hexahedron) == 3
+    @test nvertices(Hexahedron) == 8
+
+    t = Tetrahedron(P3[(0,0,0),(1,0,0),(0,1,0),(0,0,1)])
+    @test measure(t) == T(1/6)
   end
 
   @testset "Chains" begin
@@ -160,6 +95,11 @@
     c4 = Chain(T.((1,1.)),T.((2.,2.)),T.((1.,1.)))
     @test c2 isa Chain{2,T,Vector{P2}}
     @test c1 == c2 == c3 == c4
+
+    # nvertices vs npoints
+    c = Chain(P2[(0,0),(1,0),(1,1),(0,1),(0,0)])
+    @test nvertices(c) == 4
+    @test Meshes.npoints(c) == 5
 
     # segments
     c = Chain(P2[(1,1),(2,2),(3,3)])
@@ -220,37 +160,30 @@
     @test view(c, 4:6) == Chain(P2[(0,1),(0,0),(1,0)])
   end
 
-  @testset "Hexahedrons" begin
-    @test paramdim(Hexahedron) == 3
-  end
-
-  @testset "Pyramids" begin
-    @test paramdim(Pyramid) == 3
-  end
-
-  @testset "Tetrahedrons" begin
-    @test paramdim(Tetrahedron) == 3
-    t = Tetrahedron(P3[(0,0,0),(1,0,0),(0,1,0),(0,0,1)])
-    @test measure(t) == T(1/6)
-  end
-
   @testset "PolyAreas" begin
     @test paramdim(PolyArea) == 2
 
     # test accessor methods
-    poly = PolyArea(P2[(1,2),(2,3),(1,2)])
+    poly = PolyArea(P2[(1,2),(2,3),(1,2)], fix=false)
     @test vertices(poly) == CircularVector(P2[(1,2),(2,3)])
-    poly = PolyArea(P2[(1,2),(2,3),(1,2)], [P2[(1.1, 2.54),(1.4,1.5),(1.1,2.54)]])
+    poly = PolyArea(P2[(1,2),(2,3),(1,2)], [P2[(1.1, 2.54),(1.4,1.5),(1.1,2.54)]], fix=false)
     @test vertices(poly) == CircularVector(P2[(1,2),(2,3),(1.1,2.54),(1.4,1.5)])
+
+    # test constructor with orientation fix
+    poly = PolyArea(P2[(0,0),(0,1),(1,1),(1,0),(0,0)])
+    @test vertices(poly) == CircularVector(P2[(0,0),(1,0),(1,1),(0,1)])
+    poly = PolyArea(P2[(0,0),(0,1),(1,1),(1,0),(0,0)], fix=false)
+    @test vertices(poly) == CircularVector(P2[(0,0),(0,1),(1,1),(1,0)])
 
     # COMMAND USED TO GENERATE TEST FILES (VARY --seed = 1, 2, ..., 5)
     # rpg --cluster 30 --algo 2opt --format line --seed 1 --output poly1
     fnames = ["poly$i.line" for i in 1:5]
     polys1 = [readpoly(T, joinpath(datadir, fname)) for fname in fnames]
     for poly in polys1
-      @test nvertices(first(chains(poly))) == 30
       @test !hasholes(poly)
       @test issimple(poly)
+      @test boundary(poly) == first(chains(poly))
+      @test nvertices(poly) == 30
       for algo in [WindingOrientation(), TriangleOrientation()]
         @test orientation(poly, algo) == [:CCW]
       end
@@ -262,9 +195,10 @@
     fnames = ["smooth$i.line" for i in 1:5]
     polys2 = [readpoly(T, joinpath(datadir, fname)) for fname in fnames]
     for poly in polys2
-      @test nvertices(first(chains(poly))) == 120
       @test !hasholes(poly)
       @test issimple(poly)
+      @test boundary(poly) == first(chains(poly))
+      @test nvertices(poly) == 120
       for algo in [WindingOrientation(), TriangleOrientation()]
         @test orientation(poly, algo) == [:CCW]
       end
@@ -277,10 +211,11 @@
     polys3 = [readpoly(T, joinpath(datadir, fname)) for fname in fnames]
     for poly in polys3
       rings = chains(poly)
-      @test nvertices(first(rings)) < 30
-      @test all(nvertices.(rings[2:end]) .< 18)
       @test hasholes(poly)
       @test !issimple(poly)
+      @test boundary(poly) == Multi(rings)
+      @test nvertices(first(rings)) < 30
+      @test all(nvertices.(rings[2:end]) .< 18)
       for algo in [WindingOrientation(), TriangleOrientation()]
         orients = orientation(poly, algo)
         @test orients[1] == :CCW
@@ -291,7 +226,7 @@
 
     # test bridges
     for poly in [polys1; polys2; polys3]
-      b  = bridge(poly)
+      b, _ = bridge(poly)
       nb = nvertices(b)
       np = nvertices.(chains(poly))
       @test nb ≥ sum(np)
@@ -313,7 +248,7 @@
     @test vertices(poly) == P2[(0,0),(1,0),(1,1),(0,1),
                                (0.2,0.2),(0.2,0.4),(0.4,0.4),(0.4,0.2),
                                (0.6,0.2),(0.6,0.4),(0.8,0.4),(0.8,0.2)]
-    chain = bridge(poly)
+    chain, _ = bridge(poly)
     target = T[
       0.0  0.2  0.2  0.4  0.4  0.6  0.6  0.8  0.8  0.6  0.4  0.2  0.0  1.0  1.0  0.0
       0.0  0.2  0.4  0.4  0.2  0.2  0.4  0.4  0.2  0.2  0.2  0.2  0.0  0.0  1.0  1.0
@@ -328,7 +263,7 @@
 
     # unique and bridges
     poly = PolyArea(P2[(0,0),(1,0),(1,0),(1,1),(1,2),(0,2),(0,1),(0,1),(0,0)])
-    chain = poly |> unique |> bridge
+    chain, _ = poly |> unique |> bridge
     @test chain == Chain(P2[(0,0),(1,0),(1,1),(1,2),(0,2),(0,1),(0,0)])
 
     # centroid
@@ -348,5 +283,23 @@
     @test P2(0.25,0.25) ∉ poly
     @test P2(0.75,0.25) ∉ poly
     @test P2(0.75,0.75) ∈ poly
+
+    # area
+    outer = P2[(0,0),(1,0),(1,1),(0,1),(0,0)]
+    hole1 = P2[(0.2,0.2),(0.4,0.2),(0.4,0.4),(0.2,0.4),(0.2,0.2)]
+    hole2 = P2[(0.6,0.2),(0.8,0.2),(0.8,0.4),(0.6,0.4),(0.6,0.2)]
+    poly  = PolyArea(outer, [hole1, hole2])
+    @test area(poly) ≈ T(0.92)
+
+    # convexity
+    outer = P2[(0,0),(1,0),(1,1),(0,1),(0,0)]
+    hole1 = P2[(0.2,0.2),(0.4,0.2),(0.4,0.4),(0.2,0.4),(0.2,0.2)]
+    hole2 = P2[(0.6,0.2),(0.8,0.2),(0.8,0.4),(0.6,0.4),(0.6,0.2)]
+    poly1 = PolyArea(outer)
+    poly2 = PolyArea(outer, [hole1, hole2])
+    @test isconvex(poly1)
+    @test !isconvex(poly2)
+    poly  = PolyArea(P2[(0,0),(1,0),(1,1),(0.5,0.5),(0,1),(0,0)])
+    @test !isconvex(poly)
   end
 end

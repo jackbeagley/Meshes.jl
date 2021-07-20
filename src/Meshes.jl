@@ -6,6 +6,7 @@ module Meshes
 
 using Tables
 using StaticArrays
+using SparseArrays
 using CircularArrays
 using SimpleTraits
 using RecipesBase
@@ -19,6 +20,9 @@ using Distances: PreMetric, Euclidean, Mahalanobis, evaluate
 using ReferenceFrameRotations: angle_to_dcm
 using NearestNeighbors: KDTree, BallTree, knn, inrange
 
+# import categorical arrays as a temporary solution for plot recipes
+using CategoricalArrays: CategoricalValue, levelcode
+
 import Tables
 import Random
 import Base: values, ==, +, -, *
@@ -30,6 +34,9 @@ import NearestNeighbors: MinkowskiMetric
 import TableTraits
 import IteratorInterfaceExtensions
 const IIE = IteratorInterfaceExtensions
+
+# IO utils
+include("ioutils.jl")
 
 # numerical tolerances
 include("tolerances.jl")
@@ -51,28 +58,26 @@ include("geometries.jl")
 # collections
 include("collections.jl")
 
-# geometric distances
-include("distances.jl")
-
-# rotation conventions
-include("conventions.jl")
-
-# connectivities and meshes
+# meshes
 include("connectivities.jl")
-include("topostructures.jl")
+include("topologies.jl")
+include("toporelations.jl")
 include("mesh.jl")
 
-# domain and data views
-include("views.jl")
+# mesh data
+include("meshdata.jl")
 
-# paths for traversal
+# miscellaneous
+include("conventions.jl")
 include("paths.jl")
-
-# neighborhoods and searches
+include("distances.jl")
 include("neighborhoods.jl")
 include("neighborsearch.jl")
+include("supportfun.jl")
+include("laplacian.jl")
 
-# partitions
+# views and partitions
+include("views.jl")
 include("partitions.jl")
 
 # algorithms
@@ -82,6 +87,8 @@ include("partitioning.jl")
 include("intersections.jl")
 include("discretization.jl")
 include("simplification.jl")
+include("refinement.jl")
+include("smoothing.jl")
 include("boundingboxes.jl")
 
 # utilities
@@ -100,7 +107,8 @@ export
   # points
   Point, Point1, Point2, Point3,
   Point1f, Point2f, Point3f,
-  embeddim, coordtype, coordinates,
+  embeddim, paramdim,
+  coordtype, coordinates,
   ⪯, ≺, ⪰, ≻,
 
   # vectors
@@ -109,10 +117,15 @@ export
   # angles
   ∠,
 
-  # domain/data traits
-  Domain, Data, Variable,
+  # domain traits
+  Domain,
+  embeddim, paramdim, coordtype,
+  element, nelements,
+
+  # data traits
+  Data, Variable,
   domain, constructor, asarray,
-  nelements, variables, name, mactype,
+  variables, name, mactype,
 
   # optional traits
   IsGrid, isgrid,
@@ -121,7 +134,7 @@ export
   Geometry,
   embeddim, paramdim, coordtype,
   measure, area, volume, boundary,
-  centroid,
+  centroid, isconvex, issimplex,
 
   # primitives
   Primitive,
@@ -133,9 +146,11 @@ export
 
   # polytopes
   Polytope, Polygon, Polyhedron,
-  Segment, Triangle, Quadrangle,
-  Pyramid, Tetrahedron, Hexahedron,
+  Segment, Ngon, Triangle, Quadrangle,
+  Pentagon, Hexagon, Heptagon,
+  Octagon, Nonagon, Decagon,
   Chain, PolyArea,
+  Tetrahedron, Pyramid, Hexahedron,
   vertices, nvertices,
   windingnumber, chains, segments,
   isclosed, issimple, hasholes,
@@ -145,6 +160,9 @@ export
   # orientation algorithms
   WindingOrientation,
   TriangleOrientation,
+
+  # point or geometry alias
+  PointOrGeometry,
 
   # multi-types
   Multi,
@@ -162,31 +180,6 @@ export
   axesseq, orientation, angleunits,
   mainaxis, isextrinsic, rotmat,
 
-  # connectivities
-  Connectivity,
-  paramdim, indices,
-  connect, materialize,
-
-  # topological structures
-  TopologicalStructure,
-  ExplicitStructure,
-  HalfEdgeStructure,
-  HalfEdge,
-  connectivities,
-  halfedges,
-  edgeonelem,
-  edgeonvertex,
-  ncells,
-
-  # meshes
-  Mesh,
-  CartesianGrid, SimpleMesh,
-  faces, elements, spacing,
-  nelements,
-
-  # views
-  DomainView, DataView,
-
   # paths
   Path,
   LinearPath, RandomPath,
@@ -201,11 +194,55 @@ export
   # neighbordhood search
   NeighborSearchMethod,
   BoundedNeighborSearchMethod,
-  NeighborhoodSearch,
+  BallSearch,
   KNearestSearch,
   KBallSearch,
   BoundedSearch,
   search!, search,
+
+  # miscellaneous
+  supportfun,
+  laplacematrix,
+
+  # connectivities
+  Connectivity,
+  paramdim, indices,
+  connect, materialize,
+  issimplex,
+
+  # topologies
+  Topology,
+  vertices, nvertices,
+  faces, elements, facets,
+  element, nelements,
+  facet, nfacets,
+  FullTopology,
+  GridTopology,
+  HalfEdgeTopology, HalfEdge,
+  half4elem, half4vert,
+  half4edge, half4pair,
+  edge4pair,
+
+  # topological relations
+  TopologicalRelation,
+  Boundary, Coboundary, Adjacency,
+
+  # meshes
+  Mesh,
+  CartesianGrid, SimpleMesh,
+  vertices, nvertices, topology,
+  faces, elements, facets,
+  element, nelements,
+  facet, nfacets,
+  topoconvert,
+  spacing,
+
+  # mesh data
+  MeshData,
+  meshdata,
+
+  # views
+  DomainView, DataView,
 
   # partitions
   Partition,
@@ -217,10 +254,14 @@ export
 
   # sampling
   SamplingMethod,
-  RegularSampling,
+  DiscreteSamplingMethod,
+  ContinuousSamplingMethod,
   UniformSampling,
   WeightedSampling,
   BallSampling,
+  RegularSampling,
+  HomogeneousSampling,
+  MinDistanceSampling,
   sample,
 
   # partitioning
@@ -243,19 +284,18 @@ export
 
   # intersections
   Intersection,
+  NoIntersection,
   CrossingLines,
   OverlappingLines,
-  NonIntersectingLines,
   CrossingSegments,
   MidTouchingSegments,
   CornerTouchingSegments,
   OverlappingSegments,
-  NonIntersectingSegments,
   OverlappingBoxes,
   FaceTouchingBoxes,
   CornerTouchingBoxes,
-  NonIntersectingBoxes,
   intersecttype,
+  hasintersect,
 
   # discretization
   DiscretizationMethod,
@@ -266,6 +306,17 @@ export
   SimplificationMethod,
   DouglasPeucker,
   simplify,
+
+  # refinement
+  RefinementMethod,
+  QuadRefinement,
+  CatmullClark,
+  refine,
+
+  # smoothing
+  SmoothingMethod,
+  TaubinSmoothing,
+  smooth,
 
   # bounding boxes
   boundingbox,
