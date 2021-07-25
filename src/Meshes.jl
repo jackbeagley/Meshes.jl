@@ -294,6 +294,13 @@ export
   OverlappingBoxes,
   FaceTouchingBoxes,
   CornerTouchingBoxes,
+  IntersectingRayTri,
+  NonIntersectingRayTri,
+  IntersectingRayMesh,
+  NonIntersectingRayMesh,
+  IntersectingRayPlane,
+  ContainedRayPlane,
+  NonIntersectingRayPlane,
   intersecttype,
   hasintersect,
 

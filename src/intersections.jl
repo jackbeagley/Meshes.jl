@@ -108,6 +108,23 @@ struct NonIntersectingRayMesh <: Intersection end
 
 Base.get(::NonIntersectingRayMesh) = nothing
 
+# ------------------------
+# RAY-PLANE INTERSECTIONS
+# ------------------------
+
+struct IntersectingRayPlane{P<:Point, T} <: Intersection
+  value::P
+  t::T
+end
+
+struct ContainedRayPlane <: Intersection end
+
+Base.get(::ContainedRayPlane) = nothing
+
+struct NonIntersectingRayPlane <: Intersection end
+
+Base.get(::NonIntersectingRayPlane) = nothing
+
 # ----------------
 # IMPLEMENTATIONS
 # ----------------

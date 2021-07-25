@@ -86,6 +86,24 @@ function Base.in(p::Point{2,T}, t::Triangle{2,T}) where {T}
   zero(T) ≤ λ₃ ≤ one(T)
 end
 
+function Base.in(p::Point{3,T}, t::Triangle{3,T}) where {T}
+  # https://people.cs.clemson.edu/~dhouse/courses/404/notes/barycentric.pdf
+  a, b, c = t.vertices
+
+  v_n = (b - a) × (c - b)
+
+  A = norm(v_n)
+
+  n = v_n / A
+
+  # barycentric coordinates
+  λ₁ = ((c - b) × (p - b)) ⋅ n / A
+  λ₂ = ((a - c) × (p - c)) ⋅ n / A
+  
+  # barycentric check
+  (λ₁ ≥ 0) && (λ₂ ≥ 0) && ((λ₁ + λ₂) ≤ one(T))
+end
+
 function Base.in(p::Point{Dim,T}, ngon::Ngon{N,Dim,T}) where {N,Dim,T}
   # decompose n-gons into triangles by
   # fan triangulation (assumes convexity)

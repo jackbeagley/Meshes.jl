@@ -74,3 +74,27 @@ function intersecttype(r::Ray{Dim,T}, m::Mesh{Dim,T}) where {Dim, T}
         return NonIntersectingRayMesh()
     end    
 end
+
+function intersecttype(r::Ray{3,T}, m::Plane{3,T}) where {T}
+    n = m.v × m.w
+    l_dot_n = r.v ⋅ n
+    pₒ_dot_n = m.pₒ.coords ⋅ n
+
+    if isapprox(l_dot_n, zero(T))
+        if isapprox(pₒ_dot_n, l_dot_n)
+            return ContainedRayPlane()
+        else
+            return NonIntersectingRayPlane()
+        end
+    else
+        d = (l_dot_n - pₒ_dot_n) / l_dot_n
+
+        if d >= zero(T)
+            p = r.p + r.v * d
+
+            return IntersectingRayPlane(p, d)
+        else
+            return NonIntersectingRayPlane()
+        end
+    end
+end
