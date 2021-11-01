@@ -165,6 +165,28 @@ using Base: hash_integer
     @test isnothing(s9 ∩ t1)
     @test isa(intersecttype(s10, t1), NoIntersection) # Co-planar, within bounding box of t, no intersection
   end
+    
+  @testset "Meshes" begin
+    # Segments with SimpleMesh
+    m_connectivity = [connect((1, 2, 3), Triangle), connect((2, 3, 4), Triangle)]
+    m_points = P3.([
+                [0, 0, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+                [1, 1, 0]
+                ])
+
+        
+    m = SimpleMesh(m_points, m_connectivity)
+
+    s1 = Segment(P3(0, 0, 1), P3(0, 0, -1))
+    s2 = Segment(P3(0.2, 0.2, 1), P3(0.2, 0.2, -1))
+    s3 = Segment(P3(0, 0.4, 1), P3(0.4, 0, -1))
+
+    @test s1 ∩ m == P3(0, 0, 0)
+    @test s2 ∩ m == P3(0.2, 0.2, 0.0)
+    @test s3 ∩ m == P3(0.2, 0.2, 0.0)
+  end
 
   @testset "Lines" begin
     l1 = Line(P2(0,0), P2(1,0))
