@@ -93,15 +93,6 @@ struct NoIntersection <: Intersection end
 
 Base.get(::NoIntersection) = nothing
 
-# -------------------------------
-# SEGMENT-TRIANGLE INTERSECTIONS
-# -------------------------------
-
-struct IntersectingSegmentTri{P<:Point, T} <: Intersection
-  value::P
-  t::T
-end
-
 # ---------------------------
 # SEGMENT-MESH INTERSECTIONS
 # ---------------------------

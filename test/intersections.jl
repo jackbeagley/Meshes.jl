@@ -178,11 +178,11 @@ using Base: hash_integer
         
     m = SimpleMesh(m_points, m_connectivity)
 
-    s1 = Segment(P3(0, 0, 1), P3(0, 0, -1))
-    s2 = Segment(P3(0.2, 0.2, 1), P3(0.2, 0.2, -1))
-    s3 = Segment(P3(0, 0.4, 1), P3(0.4, 0, -1))
+    s1 = Segment(P3(0.0, 0.0, 1.0), P3(0.0, 0.0, -1.0))
+    s2 = Segment(P3(0.2, 0.2, 1.0), P3(0.2, 0.2, -1.0))
+    s3 = Segment(P3(0.0, 0.4, 1.0), P3(0.4, 0.0, -1.0))
 
-    @test s1 ∩ m == P3(0, 0, 0)
+    @test s1 ∩ m == P3(0.0, 0.0, 0.0)
     @test s2 ∩ m == P3(0.2, 0.2, 0.0)
     @test s3 ∩ m == P3(0.2, 0.2, 0.0)
   end
