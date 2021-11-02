@@ -168,3 +168,63 @@ function intersectcolinear(s1::Segment{Dim,T}, s2::Segment{Dim,T}) where {Dim,T}
   end
 end
 
+function intersecttype(s::Segment{Dim,T}, m::Mesh{Dim,T}) where {Dim, T}
+  intersection_found = false
+  t_intersection = NaN
+  intersecting_face = 0
+  intersecting_point = Point{Dim, T}
+  
+  # get the faces in the mesh
+  m_faces = faces(m, 2)
+
+  # iterate through each face and check for intersections (looking for the closest one)
+  for (i, face) ∈ enumerate(m_faces)
+      # evaluate whether or not the ray intersects the mesh
+      intersection_result = intersecttype(s, face)
+
+      if intersection_result isa IntersectingSegmentTri
+          intersection_found = true
+
+          # if this intersection is closer than a previously found one
+          # flag it as so
+          if !(intersection_result.t >= t_intersection)
+              intersecting_face = i
+              t_intersection = intersection_result.t
+              intersecting_point = intersection_result.value
+          end
+      end
+  end
+
+  # output the closest intersection if found, and don't otherwise
+  if intersection_found
+      return IntersectingSegmentMesh(intersecting_point, t_intersection, intersecting_face)
+  else
+      return NoIntersection()
+  end    
+end
+
+function intersecttype(s::Segment{3,T}, m::Plane{3,T}) where {T}
+  s_v = s.vertices
+  
+  n = m.v × m.w
+  l_dot_n = (s_v[2] - s_v[1]) ⋅ n
+  pₒ_dot_n = m.pₒ.coords ⋅ n
+
+  if isapprox(l_dot_n, zero(T))
+      if isapprox(pₒ_dot_n, l_dot_n)
+          return ContainedSegmentPlane()
+      else
+          return NoIntersection()
+      end
+  else
+    λ = (l_dot_n - pₒ_dot_n) / l_dot_n
+
+      if (λ < zero(T)) || (λ > one(T))
+          p = s(λ)
+
+          return IntersectingSegmentPlane(p, λ)
+      else
+          return NoIntersection()
+      end
+  end
+end

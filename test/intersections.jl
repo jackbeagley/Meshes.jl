@@ -175,7 +175,6 @@ using Base: hash_integer
                 [0, 1, 0],
                 [1, 1, 0]
                 ])
-
         
     m = SimpleMesh(m_points, m_connectivity)
 
