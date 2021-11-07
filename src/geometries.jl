@@ -124,6 +124,9 @@ paramdim(multi::Multi) = maximum(paramdim, multi.items)
   length(multi₁) == length(multi₂) &&
   all(g -> g[1] == g[2], zip(multi₁, multi₂))
 
+vertices(multi::Multi) =
+  [vertex for geom in multi for vertex in vertices(geom)]
+
 function centroid(multi::Multi)
   cs = coordinates.(centroid.(multi.items))
   Point(sum(cs) / length(cs))
@@ -133,8 +136,12 @@ measure(multi::Multi) = sum(measure, multi.items)
 
 area(multi::Multi{Dim,T,<:Polygon}) where{Dim,T} = measure(multi)
 
+boundary(multi::Multi) = Multi([boundary(geom) for geom in multi])
+
 chains(multi::Multi{Dim,T,<:Polygon}) where {Dim,T} =
   [chain for geom in multi for chain in chains(geom)]
+
+Base.in(point::Point, multi::Multi) = any(geom -> point ∈ geom, multi)
 
 function Base.show(io::IO, multi::Multi{Dim,T}) where {Dim,T}
   n = length(multi.items)

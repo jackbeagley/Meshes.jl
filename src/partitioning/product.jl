@@ -16,8 +16,8 @@ end
 # general case
 function partition(object, method::ProductPartition)
   # individual partition results
-  s₁ = subsets(partition(object, method.p₁))
-  s₂ = subsets(partition(object, method.p₂))
+  s₁ = indices(partition(object, method.p₁))
+  s₂ = indices(partition(object, method.p₂))
 
   # label-based representation
   l₁ = Vector{Int}(undef, nelements(object))
@@ -60,5 +60,3 @@ function partition(object, method::ProductPartition{P1,P2}) where {P1<:SPredicat
   pred(x, y) = method.p₁(x, y) * method.p₂(x, y)
   partition(object, SpatialPredicatePartition(pred))
 end
-
-*(p₁::PartitionMethod, p₂::PartitionMethod) = ProductPartition(p₁, p₂)

@@ -21,16 +21,14 @@ function partition(object, method::HierarchicalPartition)
   p = partition(object, method.first)
 
   # use second method to partition the first
-  s = subsets(p)
+  s = indices(p)
   for (i, d) in Iterators.enumerate(p)
     q = partition(d, method.second)
 
-    for js in subsets(q)
+    for js in indices(q)
       push!(result, s[i][js])
     end
   end
 
   Partition(object, result)
 end
-
-→(first, second) = HierarchicalPartition(first, second)

@@ -64,7 +64,7 @@ Tells whether or not polytopes `p1` and `p2` are equal.
 
 Return the centroid of the `polytope`.
 """
-centroid(p::Polytope) = Point(sum(coordinates.(vertices(p))) / length(vertices(p)))
+centroid(p::Polytope) = Point(sum(coordinates, vertices(p)) / length(vertices(p)))
 
 """
     unique(polytope)
@@ -136,7 +136,8 @@ function hasholes(::Polygon) end
     issimple(polygon)
 
 Tells whether or not the `polygon` is simple.
-See https://en.wikipedia.org/wiki/Simple_polygon.
+See [https://en.wikipedia.org/wiki/Simple_polygon]
+(https://en.wikipedia.org/wiki/Simple_polygon).
 """
 issimple(p::Polygon) = issimple(typeof(p))
 
@@ -153,7 +154,12 @@ function windingnumber(::Point, ::Polygon) end
 Returns the orientation of the rings of the `polygon`
 as either counter-clockwise (CCW) or clockwise (CW).
 """
-function orientation(::Polygon) end
+orientation(p::Polygon) = orientation(p, WindingOrientation())
+
+function orientation(p::Polygon, algo)
+  o = [orientation(c, algo) for c in chains(p)]
+  hasholes(p) ? o : first(o)
+end
 
 """
     boundary(polygon)
@@ -193,7 +199,7 @@ function bridge(p::Polygon{Dim,T}; width=zero(T)) where {Dim,T}
   end
 
   # retrieve chains as vectors of coordinates
-  pchains = [coordinates.(vertices(c)) for c in chains(p)]
+  pchains = [coordinates.(vertices(open(c))) for c in chains(p)]
 
   # sort vertices lexicographically
   coords  = [coord for pchain in pchains for coord in pchain]

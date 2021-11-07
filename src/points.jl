@@ -36,7 +36,7 @@ Base.convert(::Type{Point{Dim,T}}, p::Point) where {Dim,T} = Point{Dim,T}(p.coor
 Base.convert(::Type{Point}, coords) = Point{length(coords),eltype(coords)}(coords)
 
 # type aliases for convenience
-const Point1 = Point{1,Float64}
+const Point1  = Point{1,Float64}
 const Point2  = Point{2,Float64}
 const Point3  = Point{3,Float64}
 const Point1f = Point{1,Float32}
@@ -123,6 +123,20 @@ Generalized inequality for non-negative orthant Rⁿ₊
 ⪰(A::Point{Dim,T}, B::Point{Dim,T}) where {Dim,T} = all(A - B .≥ zero(T))
 ≺(A::Point{Dim,T}, B::Point{Dim,T}) where {Dim,T} = all(B - A .> zero(T))
 ≻(A::Point{Dim,T}, B::Point{Dim,T}) where {Dim,T} = all(A - B .> zero(T))
+
+"""
+    center(point)
+
+Return the `point` itself.
+"""
+center(p::Point) = p
+
+"""
+    centroid(point)
+
+Return the `point` itself.
+"""
+centroid(p::Point) = p
 
 """
     rand(P::Type{<:Point}, n=1)

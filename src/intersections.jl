@@ -81,7 +81,19 @@ struct IntersectingSegmentTriangle{P<:Point} <: Intersection
   value::P
 end
 
-struct OverlappingSegmentTriangle{S<:Segment} <: Intersection
+# ----------------------------
+# SEGMENT-PLANE INTERSECTIONS
+# ----------------------------
+
+struct CrossingSegmentPlane{P<:Point} <: Intersection
+  value::P
+end
+
+struct TouchingSegmentPlane{P<:Point} <: Intersection
+  value::P
+end
+
+struct OverlappingSegmentPlane{S<:Segment} <: Intersection
   value::S
 end
 
@@ -122,6 +134,7 @@ Base.get(::ContainedSegmentPlane) = nothing
 
 include("intersections/lines.jl")
 include("intersections/segments.jl")
+include("intersections/planes.jl")
 include("intersections/triangles.jl")
 include("intersections/boxes.jl")
 

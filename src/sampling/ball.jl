@@ -22,19 +22,19 @@ end
 BallSampling(radius; metric=Euclidean(), maxsize=nothing) =
   BallSampling(radius, metric, maxsize)
 
-function sample(object, method::BallSampling)
+function sample(rng::AbstractRNG, object, method::BallSampling)
   radius = method.radius
   metric = method.metric
   msize  = method.maxsize ≠ nothing ? method.maxsize : Inf
 
   # neighborhood search with ball
-  ball = NormBall(radius, metric)
+  ball = IsotropicBall(radius, metric)
   searcher = BallSearch(object, ball)
 
   locations = Vector{Int}()
   notviewed = trues(nelements(object))
   while length(locations) < msize && any(notviewed)
-    location = rand(findall(notviewed))
+    location = rand(rng, findall(notviewed))
     pₒ = centroid(object, location)
 
     # neighbors (including the location)

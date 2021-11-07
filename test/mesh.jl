@@ -37,6 +37,14 @@
     @test nelements(grid) == 200*100*50
     @test eltype(grid) <: Hexahedron{3,T}
 
+    grid = CartesianGrid(T.((0,0,0)), T.((1,1,1)), T.((0.1,0.1,0.1)))
+    @test embeddim(grid) == 3
+    @test coordtype(grid) == T
+    @test size(grid) == (10, 10, 10)
+    @test minimum(grid) == P3(0, 0, 0)
+    @test maximum(grid) == P3(1, 1, 1)
+    @test spacing(grid) == T[0.1, 0.1, 0.1]
+
     grid = CartesianGrid(T.((-1.,-1.)), T.((1.,1.)), dims=(200,100))
     @test embeddim(grid) == 2
     @test coordtype(grid) == T
@@ -107,6 +115,14 @@
       inds = indices(element(topo, i))
       @test vs[[inds...]] == vertices(element(grid, i))
     end
+
+    # convert topology
+    grid = CartesianGrid{T}(10,10)
+    mesh = topoconvert(HalfEdgeTopology, grid)
+    @test mesh isa SimpleMesh
+    @test nvertices(mesh) == 121
+    @test nelements(mesh) == 100
+    @test eltype(mesh) <: Quadrangle
     
     grid = CartesianGrid{T}(200,100)
     if T == Float32
@@ -163,6 +179,21 @@
     end
     @test eltype(mesh) <: Polygon{2,T}
 
+    # test for https://github.com/JuliaGeometry/Meshes.jl/issues/177
+    points = P3[(0,0,0),(1,0,0),(1,1,1),(0,1,0)]
+    connec = connect.([(1,2,3,4),(3,4,1)], [Tetrahedron, Triangle])
+    mesh = SimpleMesh(points, connec)
+    topo = topology(mesh)
+    @test collect(faces(topo, 2)) == [connect((3,4,1), Triangle)]
+    @test collect(faces(topo, 3)) == [connect((1,2,3,4), Tetrahedron)]
+    
+    # test for https://github.com/JuliaGeometry/Meshes.jl/issues/187
+    points  = P3[(0,0,0),(1,0,0),(1,1,1),(0,1,0)]
+    connec  = connect.([(1,2,3,4),(3,4,1)], [Tetrahedron, Triangle])
+    mesh    = SimpleMesh(points[4:-1:1], connec)
+    meshvp  = SimpleMesh(view(points, 4:-1:1), connec)
+    @test mesh == meshvp
+
     points = P2[(0,0), (1,0), (0,1), (1,1), (0.5,0.5)]
     connec = connect.([(1,2,5),(2,4,5),(4,3,5),(3,1,5)], Triangle)
     mesh = SimpleMesh(points, connec)
@@ -186,6 +217,15 @@
     mesh  = merge(mesh₁, mesh₂)
     @test vertices(mesh) == [vertices(mesh₁); vertices(mesh₂)]
     @test collect(elements(topology(mesh))) == connect.([(1,2,3),(4,5,6)])
+
+    # convert any mesh to SimpleMesh
+    grid = CartesianGrid{T}(10,10)
+    mesh = convert(SimpleMesh, grid)
+    @test mesh isa SimpleMesh
+    @test topology(mesh) isa FullTopology
+    @test nvertices(mesh) == 121
+    @test nelements(mesh) == 100
+    @test eltype(mesh) <: Quadrangle
 
     points = P2[(0,0), (1,0), (0,1), (1,1), (0.5,0.5)]
     connec = connect.([(1,2,5),(2,4,5),(4,3,5),(3,1,5)], Triangle)

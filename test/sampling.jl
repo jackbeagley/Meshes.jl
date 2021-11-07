@@ -1,4 +1,3 @@
-using Base: need_full_hex
 @testset "Sampling" begin
   @testset "UniformSampling" begin
     Random.seed!(2021)
@@ -93,9 +92,56 @@ using Base: need_full_hex
     for (p, t) in zip(ps, ts)
       @test p ≈ t
     end
+
+    s = Segment(P2(0, 0), P2(1, 1))
+    ps = sample(s, RegularSampling(2))
+    @test collect(ps) == P2[(0,0), (1,1)]
+    ps = sample(s, RegularSampling(3))
+    @test collect(ps) == P2[(0,0), (0.5,0.5), (1,1)]
+
+    q = Quadrangle(P2(0,0), P2(1,0), P2(1,1), P2(0,1))
+    ps = sample(q, RegularSampling(2,2))
+    @test collect(ps) == P2[(0,0), (1,0), (0,1), (1,1)]
+    ps = sample(q, RegularSampling(3,3))
+    @test collect(ps) == P2[(0,0), (0.5,0), (1,0),
+                            (0,0.5), (0.5,0.5), (1,0.5),
+                            (0,1), (0.5,1), (1,1)]
+
+    h = Hexahedron(P3[(0,0,0),(1,0,0),(1,1,0),(0,1,0),
+                      (0,0,1),(1,0,1),(1,1,1),(0,1,1)])
+    ps = sample(h, RegularSampling(2,2,2))
+    @test collect(ps) == P3[(0,0,0),(1,0,0),(0,1,0),(1,1,0),
+                            (0,0,1),(1,0,1),(0,1,1),(1,1,1)]
+    ps = sample(h, RegularSampling(3,2,2))
+    @test collect(ps) == P3[(0,0,0),(0.5,0,0),(1,0,0),(0,1,0),
+                            (0.5,1,0),(1,1,0),(0,0,1),(0.5,0,1),
+                            (1,0,1),(0,1,1),(0.5,1,1),(1,1,1)]
   end
 
   @testset "HomogeneousSampling" begin
+    s = Segment(P2(0,0), P2(1,0))
+    ps = sample(s, HomogeneousSampling(100))
+    @test first(ps) isa P2
+    @test all(0 ≤ coords[1] ≤ 1 for coords in coordinates.(ps))
+    @test all(coords[2] == 0 for coords in coordinates.(ps))
+
+    s = Segment(P2(0,0), P2(0,1))
+    ps = sample(s, HomogeneousSampling(100))
+    @test first(ps) isa P2
+    @test all(coords[1] == 0 for coords in coordinates.(ps))
+    @test all(0 ≤ coords[2] ≤ 1 for coords in coordinates.(ps))
+
+    s = Segment(P2(0,0), P2(1,1))
+    ps = sample(s, HomogeneousSampling(100))
+    @test first(ps) isa P2
+    @test all(0 ≤ coords[1] == coords[2] ≤ 1 for coords in coordinates.(ps))
+
+    c = Chain(P2(0,0), P2(1,0), P2(0,1), P2(1,1))
+    ps = sample(c, HomogeneousSampling(100))
+    @test first(ps) isa P2
+    @test all(coords[1] + coords[2] == 1 || (0 ≤ coords[1] ≤ 1 && coords[2] ∈ [0, 1])
+              for coords in coordinates.(ps))
+
     t = Triangle(P2(0,0), P2(1,0), P2(0,1))
     ps = sample(t, HomogeneousSampling(100))
     @test first(ps) isa P2
@@ -106,6 +152,12 @@ using Base: need_full_hex
     @test first(ps) isa P2
     @test all(∈(q), ps)
 
+    poly1 = PolyArea(P2[(0,0),(1,0),(1,1),(0,1),(0,0)])
+    poly2 = PolyArea(P2[(1,1),(2,1),(2,2),(1,2),(1,1)])
+    multi = Multi([poly1, poly2])
+    ps = sample(multi, HomogeneousSampling(100))
+    @test all(p -> (P2(0,0) ⪯ p ⪯ P2(1,1)) || (P2(1,1) ⪯ p ⪯ P2(2,2)), ps)
+
     points = P2[(0,0), (1,0), (0,1), (1,1), (0.25,0.5), (0.75,0.5)]
     connec = connect.([(3,1,5),(4,6,2),(1,2,6,5),(5,6,4,3)])
     mesh = SimpleMesh(points, connec)
@@ -115,6 +167,12 @@ using Base: need_full_hex
   end
 
   @testset "MinDistanceSampling" begin
+    poly1 = PolyArea(P2[(0,0),(1,0),(1,1),(0,1),(0,0)])
+    poly2 = PolyArea(P2[(1,1),(2,1),(2,2),(1,2),(1,1)])
+    multi = Multi([poly1, poly2])
+    ps = sample(multi, MinDistanceSampling(0.1))
+    @test all(p -> (P2(0,0) ⪯ p ⪯ P2(1,1)) || (P2(1,1) ⪯ p ⪯ P2(2,2)), ps)
+
     points = P2[(0,0), (1,0), (0,1), (1,1), (0.25,0.5), (0.75,0.5)]
     connec = connect.([(3,1,5),(4,6,2),(1,2,6,5),(5,6,4,3)])
     mesh = SimpleMesh(points, connec)
@@ -123,6 +181,15 @@ using Base: need_full_hex
     @test first(ps) isa P2
     @test all(∈(mesh), ps)
     @test all(norm(ps[i] - ps[j]) ≥ 0.2 for i in 1:n for j in i+1:n)
+
+    # geometries with almost zero measure
+    # can still be sampled (at least one point)
+    poly = PolyArea(P2[(-44.20065308, -21.12284851),
+                       (-44.20324135, -21.122799875),
+                       (-44.20582962, -21.12275124),
+                       (-44.20065308, -21.12284851)])
+    ps = sample(poly, MinDistanceSampling(3.2423333333753135e-5))
+    @test length(ps) > 0
   end
 
   @testset "Utilities" begin
@@ -137,5 +204,46 @@ using Base: need_full_hex
     s = sample(d, 100, rand([1,2], 1000))
     @test nelements(s) == 100
     @test s[1] isa Hexahedron
+  end
+
+  @testset "RNGs" begin
+    dom = CartesianGrid{T}(100,100)
+    for method in [UniformSampling(100),
+                   WeightedSampling(100),
+                   BallSampling(T(10))]
+      rng = MersenneTwister(2021)
+      s1  = sample(rng, dom, method)
+      rng = MersenneTwister(2021)
+      s2  = sample(rng, dom, method)
+      @test collect(s1) == collect(s2)
+    end
+
+    # cannot test some sampling methods with T = Float32
+    # because of https://github.com/JuliaStats/StatsBase.jl/issues/695
+    if T == Float64
+      for method in [HomogeneousSampling(100),
+                     MinDistanceSampling(T(5))]
+        rng = MersenneTwister(2021)
+        s1  = sample(rng, dom, method)
+        rng = MersenneTwister(2021)
+        s2  = sample(rng, dom, method)
+        @test collect(s1) == collect(s2)
+      end
+    end
+
+    method = RegularSampling(10)
+    for geom in [Box(P2(0, 0), P2(2, 2))
+                 Sphere(P2(0, 0), T(2))
+                 Ball(P2(0, 0), T(2))
+                 Segment(P2(0, 0), P2(1, 1))
+                 Quadrangle(P2(0,0), P2(1,0), P2(1,1), P2(0,1))
+                 Hexahedron(P3[(0,0,0),(1,0,0),(1,1,0),(0,1,0),
+                               (0,0,1),(1,0,1),(1,1,1),(0,1,1)])]
+      rng = MersenneTwister(2021)
+      s1  = sample(rng, geom, method)
+      rng = MersenneTwister(2021)
+      s2  = sample(rng, geom, method)
+      @test collect(s1) == collect(s2)
+    end
   end
 end

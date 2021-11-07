@@ -3,11 +3,17 @@
     @test paramdim(Segment) == 1
     @test nvertices(Segment) == 2
 
-    s1 = Segment(P2(0.,0.), P2(1., 1.))
-    @test s1(T(0.)) == P2(0., 0.)
-    @test s1(T(1.)) == P2(1., 1.)
-    @test_throws DomainError(T(1.2), "s(t) is not defined for t outside [0, 1].") s1(T(1.2))
-    @test_throws DomainError(T(-0.5), "s(t) is not defined for t outside [0, 1].") s1(T(-0.5))
+    s = Segment(P2(0,0), P2(1,1))
+    @test minimum(s) == P2(0,0)
+    @test maximum(s) == P2(1,1)
+    @test extrema(s) == (P2(0,0), P2(1,1))
+    @test isapprox(length(s), sqrt(T(2))) 
+    @test s(T(0)) == P2(0,0)
+    @test s(T(1)) == P2(1,1)
+    @test all(p ∈ s for p in [P2(0.11, 0.11), P2(0.5, 0.5), P2(0.87, 0.87)])
+    @test all(p ∉ s for p in [P2(-0.1, -0.1), P2(1.1, 1.1), P2(1, 2)])
+    @test_throws DomainError(T(1.2), "s(t) is not defined for t outside [0, 1].") s(T(1.2))
+    @test_throws DomainError(T(-0.5), "s(t) is not defined for t outside [0, 1].") s(T(-0.5))
   end
 
   @testset "N-gons" begin
@@ -43,6 +49,17 @@
     @test chains(t) == [Chain(P2(0,0), P2(1,0), P2(0,1), P2(0,0))]
     @test bridge(t) == (first(chains(t)), [])
 
+    # test orientation
+    t = Triangle(P2(0,0), P2(1,0), P2(0,1))
+    @test orientation(t) == :CCW
+    t = Triangle(P2(0,0), P2(0,1), P2(1,0))
+    @test orientation(t) == :CW
+
+    # test angles
+    t = Triangle(P2(0,0), P2(1,0), P2(0,1))
+    @test all(isapprox.(rad2deg.(angles(t)), T[-90, -45, -45], atol=8*eps(T)))
+    @test all(isapprox.(rad2deg.(innerangles(t)), T[90, 45, 45], atol=8*eps(T)))    
+    
     # Triangle in 3D space
     t = Triangle(P3(0,0,0), P3(1,0,0), P3(0,1,0))
     @test area(t) == T(0.5)
@@ -54,12 +71,11 @@
     for p in P3[(-1,0,0),(1,2,0),(0,1,2)]
       @test p ∉ t
     end
-
     t = Triangle(P3(0,0,0), P3(0,1,0), P3(0,0,1))
     @test isapprox(normal(t), Vec(1,0,0))
     t = Triangle(P3(0,0,0), P3(2,0,0), P3(0,2,2))
     @test isapprox(normal(t), Vec(0,-1/sqrt(2),1/sqrt(2)))
-    
+
     # Quadrangle in 2D space
     q = Quadrangle(P2(0,0), P2(1,0), P2(1,1), P2(0,1))
     @test area(q) == T(1)
@@ -78,12 +94,20 @@
     @test boundary(q) == first(chains(q))
     @test chains(q) == [Chain(P2(0,0), P2(1,0), P2(1,1), P2(0,1), P2(0,0))]
     @test bridge(q) == (first(chains(q)), [])
+    @test q(T(0),T(0)) == P2(0,0)
+    @test q(T(1),T(0)) == P2(1,0)
+    @test q(T(1),T(1)) == P2(1,1)
+    @test q(T(0),T(1)) == P2(0,1)
 
     # Quadrangle in 3D space
     q = Quadrangle(P3(0,0,0), P3(1,0,0), P3(1,1,0), P3(0,1,0))
     @test area(q) == T(1)
     q = Quadrangle(P3(0,0,0), P3(1,0,0), P3(1,1,0), P3(0,1,1))
     @test area(q) > T(1)
+    @test q(T(0),T(0)) == P3(0,0,0)
+    @test q(T(1),T(0)) == P3(1,0,0)
+    @test q(T(1),T(1)) == P3(1,1,0)
+    @test q(T(0),T(1)) == P3(0,1,1)
   end
 
   @testset "N-hedrons" begin
@@ -96,6 +120,42 @@
 
     t = Tetrahedron(P3[(0,0,0),(1,0,0),(0,1,0),(0,0,1)])
     @test measure(t) == T(1/6)
+    m = boundary(t)
+    @test m isa Mesh
+    @test nvertices(m) == 4
+    @test nelements(m) == 4
+
+    h = Hexahedron(P3[(0,0,0),(1,0,0),(1,1,0),(0,1,0),
+                      (0,0,1),(1,0,1),(1,1,1),(0,1,1)])
+    @test h(T(0),T(0),T(0)) == P3(0,0,0)
+    @test h(T(0),T(0),T(1)) == P3(0,0,1)
+    @test h(T(0),T(1),T(0)) == P3(0,1,0)
+    @test h(T(0),T(1),T(1)) == P3(0,1,1)
+    @test h(T(1),T(0),T(0)) == P3(1,0,0)
+    @test h(T(1),T(0),T(1)) == P3(1,0,1)
+    @test h(T(1),T(1),T(0)) == P3(1,1,0)
+    @test h(T(1),T(1),T(1)) == P3(1,1,1)
+
+    h = Hexahedron(P3[(0,0,0),(1,0,0),(1,1,0),(0,1,0),
+                      (0,0,1),(1,0,1),(1,1,1),(0,1,1)])
+    @test volume(h) ≈ T(1*1*1)
+    h = Hexahedron(P3[(0,0,0),(2,0,0),(2,2,0),(0,2,0),
+                      (0,0,2),(2,0,2),(2,2,2),(0,2,2)])
+    @test volume(h) ≈ T(2*2*2)
+
+    # volume formula of a frustum of a prism is V = 1/3*H*(S₁+S₂+sqrt(S₁*S₂))
+    # here we build a hexahedron which is a frustum of a prism with
+    # bottom area S₁= 4, top area S₂= 1, height H = 2
+    h = Hexahedron(P3[(0,0,0),(2,0,0),(2,2,0),(0,2,0),
+                      (0,0,2),(1,0,2),(1,1,2),(0,1,2)])
+    @test volume(h) ≈ T(1/3*2*(1 + 4 + sqrt(1*4)))
+
+    h = Hexahedron(P3[(0,0,0),(1,0,0),(1,1,0),(0,1,0),
+                      (0,0,1),(1,0,1),(1,1,1),(0,1,1)])
+    m = boundary(h)
+    @test m isa Mesh
+    @test nvertices(m) == 8
+    @test nelements(m) == 6
   end
 
   @testset "Chains" begin
@@ -131,6 +191,10 @@
     @test c == Chain(P2[(1,1),(2,2),(3,3),(1,1)])
     open!(c)
     @test c == Chain(P2[(1,1),(2,2),(3,3)])
+    c = Chain(P2[(1,1),(2,2),(3,3)])
+    @test close(c) == Chain(P2[(1,1),(2,2),(3,3),(1,1)])
+    c = Chain(P2[(1,1),(2,2),(3,3),(1,1)])
+    @test open(c) == Chain(P2[(1,1),(2,2),(3,3)])
 
     # reversing chains
     c = Chain(P2[(1,1),(2,2),(3,3)])
@@ -196,7 +260,7 @@
       @test boundary(poly) == first(chains(poly))
       @test nvertices(poly) == 30
       for algo in [WindingOrientation(), TriangleOrientation()]
-        @test orientation(poly, algo) == [:CCW]
+        @test orientation(poly, algo) == :CCW
       end
       @test unique(poly) == poly
     end
@@ -211,7 +275,7 @@
       @test boundary(poly) == first(chains(poly))
       @test nvertices(poly) == 120
       for algo in [WindingOrientation(), TriangleOrientation()]
-        @test orientation(poly, algo) == [:CCW]
+        @test orientation(poly, algo) == :CCW
       end
       @test unique(poly) == poly
     end
@@ -294,6 +358,9 @@
     @test P2(0.25,0.25) ∉ poly
     @test P2(0.75,0.25) ∉ poly
     @test P2(0.75,0.75) ∈ poly
+    point = P2(0.5,0.5)
+    bytes = @allocated point ∈ poly
+    @test bytes == 0
 
     # area
     outer = P2[(0,0),(1,0),(1,1),(0,1),(0,0)]

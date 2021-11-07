@@ -47,12 +47,9 @@ include("points.jl")
 include("angles.jl")
 
 # type traits
-include("traits/variable.jl")
-include("traits/domain.jl")
-include("traits/data.jl")
-include("traits/optional.jl")
+include("traits.jl")
 
-# basic geometries
+# geometries
 include("geometries.jl")
 
 # collections
@@ -90,6 +87,7 @@ include("simplification.jl")
 include("refinement.jl")
 include("smoothing.jl")
 include("boundingboxes.jl")
+include("hulls.jl")
 
 # utilities
 include("utils.jl")
@@ -109,6 +107,7 @@ export
   Point1f, Point2f, Point3f,
   embeddim, paramdim,
   coordtype, coordinates,
+  center, centroid,
   ⪯, ≺, ⪰, ≻,
 
   # vectors
@@ -130,19 +129,22 @@ export
   # optional traits
   IsGrid, isgrid,
 
+  # domain/data alias
+  DomainOrData,
+
   # geometries
   Geometry,
   embeddim, paramdim, coordtype,
   measure, area, volume, boundary,
-  centroid, isconvex, issimplex,
+  center, centroid, isconvex, issimplex,
 
   # primitives
   Primitive,
   Line, Ray, Plane, BezierCurve,
   Box, Ball, Sphere, Cylinder,
   ncontrols, degree, Horner, DeCasteljau,
-  center, radius, height, sides,
-  measure, diagonal,
+  radius, height, sides,
+  measure, diagonal, origin,
 
   # polytopes
   Polytope, Polygon, Polyhedron,
@@ -187,9 +189,11 @@ export
   traverse,
 
   # neighborhoods
-  Neighborhood, MetricBall,
-  NormBall, Ellipsoid,
-  metric, radius,
+  Neighborhood,
+  MetricBall,
+  IsotropicBall,
+  AnisotropicBall,
+  metric, radii,
 
   # neighbordhood search
   NeighborSearchMethod,
@@ -246,11 +250,10 @@ export
 
   # partitions
   Partition,
-  subsets, metadata,
+  indices, metadata,
 
   # viewing
-  viewindices,
-  slice,
+  indices, slice,
 
   # sampling
   SamplingMethod,
@@ -280,7 +283,7 @@ export
   SpatialPredicatePartition,
   ProductPartition,
   HierarchicalPartition,
-  partition, split, →,
+  partition, split,
 
   # intersections
   Intersection,
@@ -296,6 +299,9 @@ export
   CornerTouchingBoxes,
   IntersectingSegmentTriangle,
   IntersectingSegmentMesh,
+  CrossingSegmentPlane,
+  TouchingSegmentPlane,
+  OverlappingSegmentPlane,
   intersecttype,
   hasintersect,
 
@@ -303,11 +309,13 @@ export
   DiscretizationMethod,
   FIST, Dehn1899,
   discretize,
+  triangulate,
 
   # simplification
   SimplificationMethod,
   DouglasPeucker,
   simplify,
+  decimate,
 
   # refinement
   RefinementMethod,
@@ -322,6 +330,11 @@ export
 
   # bounding boxes
   boundingbox,
+
+  # hulls
+  HullMethod,
+  GrahamScan,
+  hull,
 
   # utililities
   signarea,

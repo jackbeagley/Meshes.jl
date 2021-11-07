@@ -6,29 +6,35 @@
     Neighborhood
 
 A neighborhood is a geometry that is not attached to any specific
-point in the space, and is free to slide over a domain of interest.
+point in space, and is free to slide over a domain of interest.
 """
 abstract type Neighborhood end
 
 """
     MetricBall
 
-A metric ball is a neighborhood that can be expressed in terms of a
-metric and a range. They are useful for fast searches with tree
-data structures.
+A metric ball is a neighborhood that can be expressed in terms
+of a metric and a set of radii.
 """
 abstract type MetricBall <: Neighborhood end
 
 """
     metric(ball)
 
-Return the metric of the norm `ball`.
+Return the metric of the metric `ball`.
 """
-function metric(::MetricBall) end
+function metric end
+
+"""
+    radii(ball)
+
+Return the radii of the metric `ball`.
+"""
+function radii end
 
 # ----------------
 # IMPLEMENTATIONS
 # ----------------
 
-include("neighborhoods/normball.jl")
-include("neighborhoods/ellipsoid.jl")
+include("neighborhoods/isotropicball.jl")
+include("neighborhoods/anisotropicball.jl")
